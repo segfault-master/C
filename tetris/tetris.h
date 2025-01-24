@@ -4,21 +4,33 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
-typedef struct{
+typedef struct {
     int red;
     int green;
     int blue;
+} Color;
+
+typedef struct{
+    int color;
     int size;
     int **form;
 } Tetromino;
 
 typedef struct {
-    int cellSize;
+    int **grid;
+
 } GameParameter;
 
-Tetromino *initTetromino(int red, int green, int blue, int size, int form[size][size]);
-Tetromino **initTetrominoArray();
-void freeTetromino(Tetromino *tetromino);
+
+extern const Color colors[7];
+extern const int grid_width;
+extern const int grid_height;
+extern const int cell_size;
+
+Tetromino *initTetromino(int color, int size, int form[size][size]);
+void initTetrominoArray();
+void freeTetromino();
 
 #endif

@@ -1,7 +1,8 @@
 FLAGS	=	
 NAME	=	tetris
 SRCS	=	tetris.c		\
-			tetromino_util.c
+			tetromino_util.c\
+			const_util.c
 OBJ		=	$(SRCS:.c=.o)
 HEADER	=	./
 LIBS    = -lSDL2

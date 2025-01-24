@@ -1,13 +1,36 @@
 #include "tetris.h"
 
-GameParameter *initGameParameter(int cellSize) {
+GameParameter *initGameParameter() {
     GameParameter *param = (GameParameter*)malloc(sizeof(GameParameter));
-    param->cellSize = cellSize;
+    param->grid = (int **)malloc(grid_height * sizeof(int *));
+    if (param->grid == NULL) {
+        printf("Tetromino form memory allocation failed\n");
+        abort();
+    }
+
+    for (int i = 0; i < grid_height; i++) {
+        param->grid[i] = (int *)malloc(grid_width * sizeof(int));
+        if (param->grid[i] == NULL) {
+            printf("Tetromino form memory allocation failed for columns in row %d\n", i);
+            abort();
+        } else {
+            for (int j = 0; j < grid_width; j++) {
+                param->grid[i][j] = 0;
+            }
+        }
+    }
     return param;
 }
 
+void freeGameParameter(GameParameter *param) {
+    for (int i = 0; i < param->height; i++) {
+        free(param->grid[i]);
+    }
+    free(param);
+}
+
 void freeAll(GameParameter *gameParameter, Tetromino **tetrominos) {
-    free(gameParameter);
+    freeGameParameter(gameParameter);
     for(int i = 0; i < 7; i++) {
         freeTetromino(tetrominos[i]);
     }
@@ -15,9 +38,35 @@ void freeAll(GameParameter *gameParameter, Tetromino **tetrominos) {
     return;
 }
 
+void generateRandomTetromino() {
+    int max = 6;
+    int min = 0;
+    int random_number = rand() % (max - min + 1) + min;
+
+    return tetrominos[random_number];
+}
+
+void drawGridContent(SDL_Renderer *renderer, GameParameter *gameParameter) {
+    for (int i = 0; i < grid_height; i++) {
+        for (int j = 0; j < grid_width; j++) {
+            if (param->grid[i][j] != 0) {
+                drawCell(renderer, i, j, grid[i][j]);
+            }
+        }
+    
+    }
+}
+
+void drawCell(SDL_Renderer *renderer, int x, int y, int color) {
+    SDL_SetRenderDrawColor(renderer, colors[color].red, colors[color].green, colors[color].blue, 255);
+    // Define the rectangle (x, y, width, height)
+    SDL_Rect filledRect = {(x * cell_size) + 1, (y * cell_size) + 1, cell_size - 1, cell_size - 1};
+    SDL_RenderFillRect(renderer, &filledRect);
+}
+
 void drawGrid(SDL_Renderer *renderer, GameParameter *gameDisplay) {
-    int window_width = gameDisplay->cellSize * 10;
-    int window_height = gameDisplay->cellSize * 20;
+    int window_width = cell_size * grid_width;
+    int window_height = cell_size * grid_height;
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black background
     SDL_RenderClear(renderer);
@@ -25,18 +74,19 @@ void drawGrid(SDL_Renderer *renderer, GameParameter *gameDisplay) {
         SDL_SetRenderDrawColor(renderer, 91, 91, 91, 91); // White grid lines
 
         // Draw vertical lines
-        for (int x = 0; x <= window_width; x += gameDisplay->cellSize) {
+        for (int x = 0; x <= window_width; x += cell_size) {
             SDL_RenderDrawLine(renderer, x, 0, x, window_height);
         }
 
         // Draw horizontal lines
-        for (int y = 0; y <= window_height; y += gameDisplay->cellSize) {
+        for (int y = 0; y <= window_height; y += cell_size) {
             SDL_RenderDrawLine(renderer, 0, y, window_width, y);
         }
 }
 
 int main(int argc, char *argv[]) {
-    GameParameter *param = initGameParameter(30);
+    srand(time(NULL));
+    GameParameter *param = initGameParameter();
     Tetromino **tetrominos = initTetrominoArray();
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) {
